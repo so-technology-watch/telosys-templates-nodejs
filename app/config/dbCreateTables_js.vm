@@ -21,6 +21,7 @@ module.exports = function getDatabase(filename) {
     db = new sqlite3.Database(filename);
 
     // Initialize database : create tables
+#set ( $fkLines = '' )
 #foreach ($entity in $selectedEntities)
 #set ( $uncapitalizedEntityName = ${fn.uncapitalize($entity.name)})
 #set ( $createTable = "CREATE TABLE if not exists $uncapitalizedEntityName (
@@ -35,6 +36,10 @@ module.exports = function getDatabase(filename) {
 #set ( $createTable = $createTable + $uncapitalizedAttribName + " " + $attrib.databaseType )
 #elseif ( $attrib.type == "int" || $attrib.type == "Integer" )
 #set ( $createTable = $createTable + $uncapitalizedAttribName + " " + "INTEGER" )
+#else
+#set ( $createTable = $createTable + $uncapitalizedAttribName + " " + $attrib.type )
+##
+#end
 ##
 #if ( $entity.keyAttributes.size() > 1 )
 #else
@@ -47,20 +52,17 @@ module.exports = function getDatabase(filename) {
 #set ( $createTable = $createTable + " AUTOINCREMENT" )
 #end
 ##
-#else
-#set ( $createTable = $createTable + $uncapitalizedAttribName + " " + $attrib.type )
-##
 #if ( $attrib.isFK() )
-#set ( $createTable = $createTable + ", 
-      FOREIGN KEY("+ $uncapitalizedAttribName + ") REFERENCES " + $fn.uncapitalize($attrib.referencedEntityName) + "(" + $fn.uncapitalize($attrib.referencedEntity.keyAttribute.name) + ") ON DELETE SET NULL" )
+#set ( $fkLines = $fkLines + ", 
+      FOREIGN KEY("+ $uncapitalizedAttribName + ") REFERENCES " + $fn.uncapitalize($attrib.referencedEntityName) + "(" + $fn.uncapitalize($attrib.referencedEntity.name) + "_" + $fn.uncapitalize($attrib.referencedEntity.keyAttribute.name) + ") ON DELETE SET NULL" )
 #else
 ##
 #if ( $attrib.isNotNull() )
 #set ( $createTable = $createTable + " NOT NULL" )
 #end
+## End foreach $attrib in $entity.attributes
 #end
 ##
-#end
 #end
 #if ( $entity.keyAttributes.size() > 1 )
 #set ( $createTable = $createTable + ", PRIMARY KEY (")
@@ -75,9 +77,10 @@ module.exports = function getDatabase(filename) {
 ##
 #set ( $createTable = $createTable + $compositeConfigKeys + ")" )
 #end
+#set ( $createTable = $createTable + $fkLines )
 #set ( $createTable = $createTable + "
     )" )
-
+#set ( $fkLines = '' )
     // $entity table
     console.log(`Creating table if it does not exists : '$uncapitalizedEntityName'`);
     db.run(`$createTable`);
