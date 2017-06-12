@@ -29,10 +29,15 @@ module.exports = class ${entity}Controller {
      * @return entity
      */
     findById(req, res) {
+#set ( $keyAttribs = "" )
 #foreach ( $key in $entity.keyAttributes )
 		let ${uncapitalizedEntityName}_$key.name = req.params.${uncapitalizedEntityName}_${fn.uncapitalize($key.name)};
+#if ( $foreach.count > 1 )
+#set ( $keyAttribs = $keyAttribs + ", " )
 #end
-        this.${uncapitalizedEntityName}Dao.findById(${uncapitalizedEntityName}_${fn.argumentsList($entity.keyAttributes)})
+#set ( $keyAttribs = $keyAttribs + ${uncapitalizedEntityName} + "_" + $key.name )
+#end
+        this.${uncapitalizedEntityName}Dao.findById(${keyAttribs})
             .then(this.common.findSuccess(res))
             .catch(this.common.findError(res));
     };
