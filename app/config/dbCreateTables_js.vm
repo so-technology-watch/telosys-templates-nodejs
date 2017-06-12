@@ -53,10 +53,11 @@ module.exports = function getDatabase(filename) {
 #if ( $attrib.isFK() )
 #set ( $createTable = $createTable + ", 
       FOREIGN KEY("+ $uncapitalizedAttribName + ") REFERENCES " + $fn.uncapitalize($attrib.referencedEntityName) + "(" + $fn.uncapitalize($attrib.referencedEntity.keyAttribute.name) + ") ON DELETE SET NULL" )
-#end
+#else
 ##
 #if ( $attrib.isNotNull() )
 #set ( $createTable = $createTable + " NOT NULL" )
+#end
 #end
 ##
 #end

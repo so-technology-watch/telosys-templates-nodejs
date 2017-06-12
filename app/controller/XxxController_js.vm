@@ -89,7 +89,7 @@ module.exports = class ${entity}Controller {
         let ${uncapitalizedEntityName} = new ${entity}();
 
 #foreach ( $key in $entity.keyAttributes )
-        if (req.body.${fn.uncapitalize($key.name)}) {
+        if (req.body.${uncapitalizedEntityName}_$key.name) {
             ${uncapitalizedEntityName}.${uncapitalizedEntityName}_$key.name = req.body.${uncapitalizedEntityName}_$key.name;
         }
 #end
@@ -106,7 +106,7 @@ module.exports = class ${entity}Controller {
             return this.${uncapitalizedEntityName}Dao.createWithId(${uncapitalizedEntityName})
                 .then(this.common.editSuccess(res))
                 .catch(this.common.serverError(res));
-        }#else		if (req.body.$key.name) {
+        }#else		if (req.body.${uncapitalizedEntityName}_$key.name) {
             return this.${uncapitalizedEntityName}Dao.createWithId(${uncapitalizedEntityName})
                 .then(this.common.editSuccess(res))
                 .catch(this.common.serverError(res));

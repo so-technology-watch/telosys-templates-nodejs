@@ -150,6 +150,14 @@ module.exports = class ${entity}Dao {
         return this.common.run(sqlRequest, sqlParams);
     };
 
+#set ( $sqlRequest2CreateAttribs = "" )
+#foreach ( $key in $entity.keyAttributes )
+#if ( $foreach.count > 1 )
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + " AND " )
+#end
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + "=${DOLLAR}id" )
+#end
     /**
      * Creates the given entity in the database
      * @params $entity
@@ -158,7 +166,7 @@ module.exports = class ${entity}Dao {
     create($entity) {
         let sqlRequest = "INSERT into $uncapitalizedEntityName ($sqlCreateAttribs) " +
             "VALUES ($sqlInsertValues)";
-        let sqlRequest2 = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
+        let sqlRequest2 = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequest2CreateAttribs";
         let sqlParams = {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
@@ -178,7 +186,7 @@ module.exports = class ${entity}Dao {
     createWithId($entity) {
         let sqlRequest = "INSERT into $uncapitalizedEntityName ($sqlFindAttribs) " +
             "VALUES ($sqlInsertValuesWithId)";
-		let sqlRequest2 = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
+		let sqlRequest2 = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequest2CreateAttribs";
         let sqlParams = {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})

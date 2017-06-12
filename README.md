@@ -1,4 +1,4 @@
-# IDBNodeSQL Telosys 3 Template
+# Node.JS Telosys 3 Template
 
 This is a Telosys Template for code generation.
 It's purpose is to generate a NodeJS REST API after having provided a DSL model.
