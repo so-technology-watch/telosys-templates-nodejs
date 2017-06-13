@@ -107,7 +107,7 @@ module.exports = class ${entity}Controller {
 #end
 
 #foreach ( $key in $entity.keyAttributes )
-#if( $foreach.count > 1 ) else if (req.body.$key.name) {
+#if( $foreach.count > 1 ) else if (req.body.${uncapitalizedEntityName}_$key.name) {
             return this.${uncapitalizedEntityName}Dao.createWithId(${uncapitalizedEntityName})
                 .then(this.common.editSuccess(res))
                 .catch(this.common.serverError(res));
@@ -132,7 +132,7 @@ module.exports = class ${entity}Controller {
 #foreach ( $key in $entity.keyAttributes )
 		let ${uncapitalizedEntityName}_$key.name = req.params.${uncapitalizedEntityName}_${fn.uncapitalize($key.name)};
 #end
-        this.${uncapitalizedEntityName}Dao.deleteById(${uncapitalizedEntityName}_${fn.argumentsList($entity.keyAttributes)})
+        this.${uncapitalizedEntityName}Dao.deleteById(${keyAttribs})
             .then(this.common.editSuccess(res))
             .catch(this.common.serverError(res));
     };
@@ -146,8 +146,8 @@ module.exports = class ${entity}Controller {
 #foreach ( $key in $entity.keyAttributes )
 		let ${uncapitalizedEntityName}_$key.name = req.params.${uncapitalizedEntityName}_${fn.uncapitalize($key.name)};
 #end
-        this.${uncapitalizedEntityName}Dao.exists(${uncapitalizedEntityName}_${fn.argumentsList($entity.keyAttributes)})
+        this.${uncapitalizedEntityName}Dao.exists(${keyAttribs})
             .then(this.common.existsSuccess(res))
             .catch(this.common.findError(res));
     };
-}
+};
