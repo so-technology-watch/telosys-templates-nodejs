@@ -94,13 +94,13 @@ module.exports = class Common {
                             }
                             else {
                                 resolve(
-                                new DaoError(201, "Resource created")
+                                new DaoError(200, "Success")
                                 )
                             }
                         });
                     } else {
                         resolve(
-                            new DaoError(201, "Success")
+                            new DaoError(200, "Success")
                         )
                     }
                 } else if (this.changes === 0) {
