@@ -20,7 +20,7 @@ module.exports = function getDatabase(filename) {
     // Load database file (Creates file if it does not exists)
     db = new sqlite3.Database(filename);
 
-    // Initialize database : create tables
+    // Initialize database : create tables	
 #set ( $fkLines = '' )
 #foreach ($entity in $selectedEntities)
 #set ( $uncapitalizedEntityName = ${fn.uncapitalize($entity.name)})

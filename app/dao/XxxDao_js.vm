@@ -10,6 +10,9 @@
 #set ( $modelRows = "" )
 #set ( $sqlInsertValues = "" )
 #set ( $sqlInsertValuesWithId = "" )
+#set ( $sqlRequestAttribs = "" )
+#set ( $sqlParamsAttribs = "" )
+#set ( $sqlRequest2CreateAttribs = "" )
 ##
 #foreach( $attrib in $entity.attributes )
 #if ( $foreach.count > 1 )
@@ -62,6 +65,30 @@
 #end
 #set ( $sqlInsertValuesWithId = $sqlInsertValuesWithId + ${DOLLAR}+${fn.uncapitalize($attrib.name)} )
 #end
+##
+#foreach ( $key in $entity.keyAttributes )
+#if ( $foreach.count > 1 )
+#set ( $sqlRequestAttribs = $sqlRequestAttribs + " AND " )
+#end
+#set ( $sqlRequestAttribs = $sqlRequestAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
+#set ( $sqlRequestAttribs = $sqlRequestAttribs + "=${DOLLAR}${fn.uncapitalize($key.name)}" )
+#end
+##
+#foreach ( $key in $entity.keyAttributes )
+#if ( $foreach.count > 1 )
+#set ( $sqlParamsAttribs = $sqlParamsAttribs + ",
+			" )
+#end
+#set ( $sqlParamsAttribs = $sqlParamsAttribs + "${DOLLAR}${fn.uncapitalize($key.name)}:${fn.uncapitalize($key.name)}" )
+#end
+##
+#foreach ( $key in $entity.keyAttributes )
+#if ( $foreach.count > 1 )
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + " AND " )
+#end
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + "=${DOLLAR}id" )
+#end
 
 // Load $entity entity
 const $entity = require('../model/$uncapitalizedEntityName');
@@ -84,25 +111,9 @@ module.exports = class ${entity}Dao {
      * @return entity
      */
     findById($fn.argumentsList($entity.keyAttributes)) {
-#set ( $sqlRequestAttribs = "" )
-#foreach ( $key in $entity.keyAttributes )
-#if ( $foreach.count > 1 )
-#set ( $sqlRequestAttribs = $sqlRequestAttribs + " AND " )
-#end
-#set ( $sqlRequestAttribs = $sqlRequestAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
-#set ( $sqlRequestAttribs = $sqlRequestAttribs + "=${DOLLAR}${fn.uncapitalize($key.name)}" )
-#end
        let sqlRequest = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
 
        let sqlParams = {
-#set ( $sqlParamsAttribs = "" )
-#foreach ( $key in $entity.keyAttributes )
-#if ( $foreach.count > 1 )
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + ",
-			" )
-#end
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + "${DOLLAR}${fn.uncapitalize($key.name)}:${fn.uncapitalize($key.name)}" )
-#end
 			$sqlParamsAttribs
 		};
         return this.common.findOne(sqlRequest, sqlParams)
@@ -150,14 +161,6 @@ module.exports = class ${entity}Dao {
         return this.common.run(sqlRequest, sqlParams);
     };
 
-#set ( $sqlRequest2CreateAttribs = "" )
-#foreach ( $key in $entity.keyAttributes )
-#if ( $foreach.count > 1 )
-#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + " AND " )
-#end
-#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
-#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + "=${DOLLAR}id" )
-#end
     /**
      * Creates the given entity in the database
      * @params $entity
@@ -204,14 +207,6 @@ module.exports = class ${entity}Dao {
     deleteById($fn.argumentsList($entity.keyAttributes)) {
 		let sqlRequest = "DELETE FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
 		let sqlParams = {
-#set ( $sqlParamsAttribs = "" )
-#foreach ( $key in $entity.keyAttributes )
-#if ( $foreach.count > 1 )
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + ",
-			" )
-#end
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + "${DOLLAR}${fn.uncapitalize($key.name)}:${fn.uncapitalize($key.name)}" )
-#end
 			$sqlParamsAttribs
 		};
         return this.common.run(sqlRequest, sqlParams);
@@ -225,14 +220,6 @@ module.exports = class ${entity}Dao {
     exists($fn.argumentsList($entity.keyAttributes)) {
         let sqlRequest = "SELECT (count(*) > 0) as found FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
 		let sqlParams = {
-#set ( $sqlParamsAttribs = "" )
-#foreach ( $key in $entity.keyAttributes )
-#if ( $foreach.count > 1 )
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + ",
-			" )
-#end
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + "${DOLLAR}${fn.uncapitalize($key.name)}:${fn.uncapitalize($key.name)}" )
-#end
 			$sqlParamsAttribs
 		};
         return this.common.existsOne(sqlRequest, sqlParams);
