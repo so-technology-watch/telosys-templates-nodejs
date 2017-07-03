@@ -27,7 +27,7 @@ module.exports = function getDatabase(filename) {
 #set ( $createTable = "CREATE TABLE if not exists $uncapitalizedEntityName (
       " )
 #foreach ( $attrib in $entity.attributes)
-#set ( $uncapitalizedAttribName = "${uncapitalizedEntityName}_${fn.uncapitalize($attrib.name)}")
+#set ( $uncapitalizedAttribName = "${fn.uncapitalize($attrib.name)}")
 #if ( $foreach.count > 1 )
 #set ( $createTable = $createTable + ", 
       " )
@@ -54,7 +54,7 @@ module.exports = function getDatabase(filename) {
 ##
 #if ( $attrib.isFK() )
 #set ( $fkLines = $fkLines + ", 
-      FOREIGN KEY("+ $uncapitalizedAttribName + ") REFERENCES " + $fn.uncapitalize($attrib.referencedEntityName) + "(" + $fn.uncapitalize($attrib.referencedEntity.name) + "_" + $fn.uncapitalize($attrib.referencedEntity.keyAttribute.name) + ") ON DELETE SET NULL" )
+      FOREIGN KEY("+ $uncapitalizedAttribName + ") REFERENCES " + $fn.uncapitalize($attrib.referencedEntityName) + "(" + $fn.uncapitalize($attrib.referencedEntity.keyAttribute.name) + ") ON DELETE SET NULL" )
 #else
 ##
 #if ( $attrib.isNotNull() )
@@ -72,7 +72,7 @@ module.exports = function getDatabase(filename) {
 #if ( $foreach.count > 1 )
 #set ( $compositeConfigKeys = $compositeConfigKeys + ", " )
 #end
-#set ( $compositeConfigKeys = $compositeConfigKeys + $uncapitalizedEntityName + "_" + $key.name )
+#set ( $compositeConfigKeys = $compositeConfigKeys + $key.name )
 #end
 ##
 #set ( $createTable = $createTable + $compositeConfigKeys + ")" )

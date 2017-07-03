@@ -18,7 +18,7 @@
 #if ( $foreach.count > 1 )
 #set ( $sqlFindAttribs = $sqlFindAttribs + ", " )
 #end
-#set ( $sqlFindAttribs = $sqlFindAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($attrib.name)} )
+#set ( $sqlFindAttribs = $sqlFindAttribs + ${fn.uncapitalize($attrib.name)} )
 #end
 ##
 #foreach( $attrib in $entity.attributes )
@@ -26,7 +26,7 @@
 #if ( !$sqlUpdateAttribs.equals("") )
 #set ( $sqlUpdateAttribs = $sqlUpdateAttribs + ", " )
 #end
-#set ( $sqlUpdateAttribs = $sqlUpdateAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($attrib.name)} )
+#set ( $sqlUpdateAttribs = $sqlUpdateAttribs + ${fn.uncapitalize($attrib.name)} )
 #set ( $sqlUpdateAttribs = $sqlUpdateAttribs + "=${DOLLAR}${fn.uncapitalize($attrib.name)}" )
 #end
 #end
@@ -36,7 +36,7 @@
 #if ( !$sqlCreateAttribs.equals("") )
 #set ( $sqlCreateAttribs = $sqlCreateAttribs + ", " )
 #end
-#set ( $sqlCreateAttribs = $sqlCreateAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($attrib.name)} )
+#set ( $sqlCreateAttribs = $sqlCreateAttribs + ${fn.uncapitalize($attrib.name)} )
 #end
 #end
 ##
@@ -45,7 +45,7 @@
 #set ( $modelRows = $modelRows + ", " )
 #end
 #set ( $modelRows = $modelRows + "row." )
-#set ( $modelRows = $modelRows + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($attrib.name)} )
+#set ( $modelRows = $modelRows + ${fn.uncapitalize($attrib.name)} )
 #end
 ##
 #set ( $insertCpt = 0 )
@@ -70,7 +70,7 @@
 #if ( $foreach.count > 1 )
 #set ( $sqlRequestAttribs = $sqlRequestAttribs + " AND " )
 #end
-#set ( $sqlRequestAttribs = $sqlRequestAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
+#set ( $sqlRequestAttribs = $sqlRequestAttribs + ${fn.uncapitalize($key.name)} )
 #set ( $sqlRequestAttribs = $sqlRequestAttribs + "=${DOLLAR}${fn.uncapitalize($key.name)}" )
 #end
 ##
@@ -86,7 +86,7 @@
 #if ( $foreach.count > 1 )
 #set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + " AND " )
 #end
-#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($key.name)} )
+#set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + ${fn.uncapitalize($key.name)} )
 #set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + "=${DOLLAR}id" )
 #end
 
@@ -155,7 +155,7 @@ module.exports = class ${entity}Dao {
         let sqlParams = {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
- 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedEntityName}_${uncapitalizedAttribName},
+ 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedAttribName},
 #end
         };
         return this.common.run(sqlRequest, sqlParams);
@@ -174,7 +174,7 @@ module.exports = class ${entity}Dao {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
 #if ( !$entity.keyAttributes.contains($attrib) )
- 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedEntityName}_${uncapitalizedAttribName},
+ 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedAttribName},
 #end
 #end
         };
@@ -193,7 +193,7 @@ module.exports = class ${entity}Dao {
         let sqlParams = {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
- 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedEntityName}_${uncapitalizedAttribName},
+ 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedAttribName},
 #end
         };
         return this.common.run(sqlRequest, sqlParams, sqlRequest2);

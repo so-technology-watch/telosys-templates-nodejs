@@ -9,7 +9,7 @@
 #if ( $foreach.count > 1 )
 #set ( $entityAttributes = $entityAttributes + "/:" )
 #end
-#set ( $entityAttributes = $entityAttributes + ${uncapitalizedEntityName} + "_" + ${fn.uncapitalize($key.name)} )
+#set ( $entityAttributes = $entityAttributes + ${fn.uncapitalize($key.name)} )
 #end
 
 // Load Modules

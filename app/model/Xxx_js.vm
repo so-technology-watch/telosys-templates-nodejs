@@ -9,7 +9,7 @@
 #if ( $foreach.count > 1 )
 #set ( $entityAttribs = $entityAttribs + ", " )
 #end
-#set ( $entityAttribs = $entityAttribs + $uncapitalizedEntityName + "_" + ${fn.uncapitalize($attrib.name)} )
+#set ( $entityAttribs = $entityAttribs + ${fn.uncapitalize($attrib.name)} )
 #end
 
 /**
@@ -20,7 +20,7 @@ module.exports = class $entity {
     constructor(${entityAttribs}) {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
- 		this.${uncapitalizedEntityName}_${uncapitalizedAttribName} = ${uncapitalizedEntityName}_${uncapitalizedAttribName};
+ 		this.${uncapitalizedAttribName} = ${uncapitalizedAttribName};
 #end
     }
 };
