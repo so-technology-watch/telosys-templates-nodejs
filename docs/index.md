@@ -25,7 +25,7 @@ The generated server Application is A NodeJS REST API using SQLite as a database
 1. Install this application (See Installation).
 2. Start the server with : `node index.js`
 3. Connect Postman to the API at : `http://localhost:3000`
-4. Try the different entities routes of the API based on your DSL model.
+4. Try the different entities routes of the API based on your DSL model (see [the Wiki](https://github.com/so-technology-watch/telosys-templates-nodejs/wiki) )
 
 ## Dependencies (installed via `npm install`)
 
