@@ -43,7 +43,9 @@ The generated server Application is A NodeJS REST API using SQLite as a database
 
 ## Thanks
 
-- [Laurent Guerin](https://github.com/l-gu), creator of [Telosys Tools](http://www.telosys.org/).
+- [Laurent Guerin](https://github.com/l-gu), creator of [Telosys Tools](https://sites.google.com/site/telosystools/).
+- [Evan You](https://github.com/yyx990803), creator of [VueJS](https://github.com/vuejs).
+- [David Fahlander](https://github.com/dfahlander), creator of [Dexie.js](https://github.com/dfahlander/Dexie.js).
 
 ## License
 
