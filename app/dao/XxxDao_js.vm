@@ -211,17 +211,4 @@ module.exports = class ${entity}Dao {
 		};
         return this.common.run(sqlRequest, sqlParams);
     };
-
-    /**
-     * Returns true if an entity exists with the given Id / Primary Key
-     * @params id
-     * returns database entry existence status (true/false)
-     */
-    exists($fn.argumentsList($entity.keyAttributes)) {
-        let sqlRequest = "SELECT (count(*) > 0) as found FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
-		let sqlParams = {
-			$sqlParamsAttribs
-		};
-        return this.common.existsOne(sqlRequest, sqlParams);
-    };
 };

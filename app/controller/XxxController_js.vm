@@ -136,18 +136,4 @@ module.exports = class ${entity}Controller {
             .then(this.common.requestSuccess(res))
             .catch(this.common.serverError(res));
     };
-
-    /**
-     * Returns true if an entity exists with the given Id / Primary Key
-     * @params req, res
-     * @return
-     */
-    exists(req, res) {
-#foreach ( $keyParam in $keyParams )
- 		$keyParam
-#end
-        this.${uncapitalizedEntityName}Dao.exists(${keyAttribs})
-            .then(this.common.requestSuccess(res))
-            .catch(this.common.findError(res));
-    };
 };

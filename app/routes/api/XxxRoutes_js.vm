@@ -28,10 +28,6 @@ router.get('/count', function (req, res) {
     ${uncapitalizedEntityName}Controller.countAll(res);
 });
 
-router.get('/exists/:$entityAttributes', function (req, res) {
-    ${uncapitalizedEntityName}Controller.exists(req, res);
-});
-
 router.get('/:$entityAttributes', function (req, res) {
     ${uncapitalizedEntityName}Controller.findById(req, res);
 });
