@@ -13,6 +13,7 @@
 #set ( $sqlRequestAttribs = "" )
 #set ( $sqlParamsAttribs = "" )
 #set ( $sqlRequest2CreateAttribs = "" )
+#set ( $sqlPrimaryKeyParams = "" )
 ##
 #foreach( $attrib in $entity.attributes )
 #if ( $foreach.count > 1 )
@@ -79,7 +80,7 @@
 #set ( $sqlParamsAttribs = $sqlParamsAttribs + ",
 			" )
 #end
-#set ( $sqlParamsAttribs = $sqlParamsAttribs + "${DOLLAR}${fn.uncapitalize($key.name)}:${fn.uncapitalize($key.name)}" )
+#set ( $sqlParamsAttribs = $sqlParamsAttribs + "${DOLLAR}${fn.uncapitalize($key.name)}: ${fn.uncapitalize($key.name)}" )
 #end
 ##
 #foreach ( $key in $entity.keyAttributes )
@@ -88,6 +89,16 @@
 #end
 #set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + ${fn.uncapitalize($key.name)} )
 #set ( $sqlRequest2CreateAttribs = $sqlRequest2CreateAttribs + "=${DOLLAR}id" )
+#end
+##
+#foreach ( $key in $entity.keyAttributes)
+#set ( $uncapitalizedKeyName = ${fn.uncapitalize($key.name)})
+#if ($foreach.count < $entity.keyAttributes.size())
+#set ( $sqlPrimaryKeyParams = $sqlPrimaryKeyParams + "${DOLLAR}${uncapitalizedKeyName} : ${entity}.${uncapitalizedKeyName}, 
+            ")
+#else
+#set ( $sqlPrimaryKeyParams = $sqlPrimaryKeyParams + "${DOLLAR}${uncapitalizedKeyName} : ${entity}.${uncapitalizedKeyName}")
+#end
 #end
 
 // Load $entity entity
@@ -102,12 +113,12 @@ const DaoCommon = require('./commons/daoCommon');
 module.exports = class ${entity}Dao {
 
     constructor() {
-        this.common = new DaoCommon();
+        this.genericDao = new DaoCommon();
     }
 
     /**
      * Tries to find an entity using its Id / Primary Key
-     * @params id
+     * @params $fn.argumentsList($entity.keyAttributes)
      * @return entity
      */
     findById($fn.argumentsList($entity.keyAttributes)) {
@@ -116,8 +127,14 @@ module.exports = class ${entity}Dao {
        let sqlParams = {
 			$sqlParamsAttribs
 		};
-        return this.common.findOne(sqlRequest, sqlParams)
-			.then(row => new ${entity}($modelRows));
+        return this.genericDao.findOne(sqlRequest, sqlParams)
+            .then(row => {
+                if(row) {
+                    return new ${entity}($modelRows);
+                } else {
+                    return false;
+                }
+            })
     };
 
     /**
@@ -126,10 +143,12 @@ module.exports = class ${entity}Dao {
      */
     findAll() {
         let sqlRequest = "SELECT * FROM $uncapitalizedEntityName";
-        return this.common.findAll(sqlRequest).then(rows => {
+        return this.genericDao.findAll(sqlRequest).then(rows => {
             let ${uncapitalizedEntityName}s = [];
-            for (const row of rows) {
-                ${uncapitalizedEntityName}s.push(new ${entity}($modelRows));
+            if (rows) {
+                for (const row of rows) {
+                    ${uncapitalizedEntityName}s.push(new ${entity}($modelRows));
+                }
             }
             return ${uncapitalizedEntityName}s;
         });
@@ -141,7 +160,7 @@ module.exports = class ${entity}Dao {
      */
     countAll() {
         let sqlRequest = "SELECT COUNT(*) AS count FROM $uncapitalizedEntityName";
-        return this.common.findOne(sqlRequest);
+        return this.genericDao.findOne(sqlRequest);
     };
 
     /**
@@ -155,10 +174,81 @@ module.exports = class ${entity}Dao {
         let sqlParams = {
 #foreach ( $attrib in $entity.attributes)
 #set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
- 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedAttribName},
+ 			${DOLLAR}${uncapitalizedAttribName}: ${entity}.${uncapitalizedAttribName},
 #end
         };
-        return this.common.run(sqlRequest, sqlParams);
+        return this.genericDao.update(sqlRequest, sqlParams);
+    };
+
+    /**
+     * Save the given entity in the database in case it exist, else create a new one
+     * @params $entity
+     * @return the updated or created entity
+     */
+    save($entity) {
+        let saveQuery = "UPDATE $uncapitalizedEntityName SET $sqlUpdateAttribs WHERE $sqlRequestAttribs";
+        let insertQuery = 
+            "INSERT into $uncapitalizedEntityName "
+#set ( $entityWithPoint = $entity.name + '.' )
+            + (($entity.keyAttributesNamesAsString(' && ', $entityWithPoint, '')) ? "($sqlFindAttribs)" : "($sqlCreateAttribs)")
+            + " VALUES "
+            + (($entity.keyAttributesNamesAsString(' && ', $entityWithPoint, '')) ? "($sqlInsertValuesWithId)" : "($sqlInsertValues)");
+#set ( $queryGetId = "" )
+#set ( $getInsert = "" )
+#set ( $getUpdate = "" )
+#if( $entity.hasCompositePrimaryKey() )
+#foreach ( $key in $entity.keyAttributes )
+#if ($foreach.count < $entity.keyAttributes.size())
+#set ( $queryGetId = $queryGetId + "${key.name}=${DOLLAR}id${foreach.count}, " )
+#set ( $getInsert = $getInsert + "${DOLLAR}id${foreach.count}: '',
+				" )
+#set ( $getUpdate = $getUpdate + "${DOLLAR}id${foreach.count}: ${entity.name}.${key.name},
+				" )
+#else
+#set ( $queryGetId = $queryGetId + "${key.name}=${DOLLAR}id${foreach.count}" )
+#set ( $getInsert = $getInsert + "${DOLLAR}id${foreach.count}: ''" )
+#set ( $getUpdate = $getUpdate + "${DOLLAR}id${foreach.count}: ${entity.name}.${key.name}" )
+#end
+#end
+#else
+#set ( $queryGetId = "${entity.keyAttribute.name}=${DOLLAR}id" )
+#set ( $getInsert = "${DOLLAR}id: ''" )
+#set ( $getUpdate = "${DOLLAR}id: ${entity.name}.${entity.keyAttribute.name}" )
+#end
+
+        let getQuery = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $queryGetId";
+
+        let sqlParams = {
+            insertUpdate: {},
+            getInsert : {
+                $getInsert
+            },
+            getUpdate : {
+                $getUpdate
+            }
+		};
+#set ($entityParamsAssign = "")
+#foreach ( $attrib in $entity.attributes)
+#if ($foreach.count < $entity.attributes.size())
+#if ( $attrib.isKeyElement() )
+#set ($entityParamsAssign = $entityParamsAssign + "${entity.name}.${attrib.name} && { ${DOLLAR}${attrib.name}: ${entity.name}.${attrib.name} },
+            ")
+#else
+#set ($entityParamsAssign = $entityParamsAssign + "{ ${DOLLAR}${attrib.name}: ${entity.name}.${attrib.name} },
+            ")
+#end
+#else
+#if ( $attrib.isKeyElement() )
+#set ($entityParamsAssign = $entityParamsAssign + "${entity.name}.${attrib.name} && { ${DOLLAR}${attrib.name}: ${entity.name}.${attrib.name} }")
+#else
+#set ($entityParamsAssign = $entityParamsAssign + "{ ${DOLLAR}${attrib.name}: ${entity.name}.${attrib.name} }")
+#end
+#end
+#end
+        Object.assign(sqlParams.insertUpdate,
+            ${entityParamsAssign});
+
+        return this.genericDao.save(saveQuery, insertQuery, getQuery, sqlParams);
     };
 
     /**
@@ -167,41 +257,23 @@ module.exports = class ${entity}Dao {
      * returns database insertion status
      */
     create($entity) {
-        let sqlRequest = "INSERT into $uncapitalizedEntityName ($sqlCreateAttribs) " +
-            "VALUES ($sqlInsertValues)";
+        let sqlRequest =
+            "INSERT into $uncapitalizedEntityName "
+            + (($entity.keyAttributesNamesAsString(' && ', $entityWithPoint, '')) ? "($sqlFindAttribs)" : "($sqlCreateAttribs)")
+            + " VALUES "
+            + (($entity.keyAttributesNamesAsString(' && ', $entityWithPoint, '')) ? "($sqlInsertValuesWithId)" : "($sqlInsertValues)");
         let sqlRequest2 = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequest2CreateAttribs";
-        let sqlParams = {
-#foreach ( $attrib in $entity.attributes)
-#set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
-#if ( !$entity.keyAttributes.contains($attrib) )
- 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedAttribName},
-#end
-#end
-        };
-        return this.common.run(sqlRequest, sqlParams, sqlRequest2);
-    };
+        let sqlParams = {};
 
-    /**
-     * Creates the given entity with a provided id in the database
-     * @params $entity
-     * returns database insertion status
-     */
-    createWithId($entity) {
-        let sqlRequest = "INSERT into $uncapitalizedEntityName ($sqlFindAttribs) " +
-            "VALUES ($sqlInsertValuesWithId)";
-		let sqlRequest2 = "SELECT $sqlFindAttribs FROM $uncapitalizedEntityName WHERE $sqlRequest2CreateAttribs";
-        let sqlParams = {
-#foreach ( $attrib in $entity.attributes)
-#set ( $uncapitalizedAttribName = ${fn.uncapitalize($attrib.name)})
- 			${DOLLAR}${uncapitalizedAttribName} : ${entity}.${uncapitalizedAttribName},
-#end
-        };
-        return this.common.run(sqlRequest, sqlParams, sqlRequest2);
+        Object.assign(sqlParams,
+            ${entityParamsAssign});
+
+        return this.genericDao.insert(sqlRequest, sqlParams, sqlRequest2);
     };
 
     /**
      * Deletes an entity using its Id / Primary Key
-     * @params id
+     * @params $fn.argumentsList($entity.keyAttributes)
      * returns database deletion status
      */
     deleteById($fn.argumentsList($entity.keyAttributes)) {
@@ -209,19 +281,45 @@ module.exports = class ${entity}Dao {
 		let sqlParams = {
 			$sqlParamsAttribs
 		};
-        return this.common.run(sqlRequest, sqlParams);
+        return this.genericDao.delete(sqlRequest, sqlParams);
+    };
+
+    /**
+     * Deletes an entity using the entity
+     * @params $entity
+     * returns database deletion status
+     */
+    delete($entity) {
+        let sqlRequest = "DELETE FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
+        let sqlParams = {
+ 			$sqlPrimaryKeyParams
+        };
+        return this.genericDao.delete(sqlRequest, sqlParams);
     };
 
     /**
      * Returns true if an entity exists with the given Id / Primary Key
-     * @params id
+     * @params $fn.argumentsList($entity.keyAttributes)
      * returns database entry existence status (true/false)
      */
-    exists($fn.argumentsList($entity.keyAttributes)) {
+    existsById($fn.argumentsList($entity.keyAttributes)) {
         let sqlRequest = "SELECT (count(*) > 0) as found FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
 		let sqlParams = {
 			$sqlParamsAttribs
 		};
-        return this.common.existsOne(sqlRequest, sqlParams);
+        return this.genericDao.existsOne(sqlRequest, sqlParams);
+    };
+
+    /**
+     * Returns true if an entity exists using the entity
+     * @params $entity
+     * returns database entry existence status (true/false)
+     */
+    exists($entity) {
+        let sqlRequest = "SELECT (count(*) > 0) as found FROM $uncapitalizedEntityName WHERE $sqlRequestAttribs";
+        let sqlParams = {
+            $sqlPrimaryKeyParams
+        };
+        return this.genericDao.existsOne(sqlRequest, sqlParams);
     };
 };

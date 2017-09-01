@@ -8,24 +8,73 @@
  */
 module.exports = class controllerCommon {
 
-    requestSuccess(res) {
+    getSuccess(res) {
         return (result) => {
-            res.status(200); // Found
-            res.json(result);
+            if (typeof result !== ('boolean' || 'undefined')) {
+                res.status(200);
+                res.json(result);
+            } else {
+                res.status(404);
+                res.json();
+            }
         }
     }
 
-    serverError(res) {
-        return (error) => {
-            res.status(error.errorCode);
-            res.json(error);
+    createSuccess(res) {
+        return (result) => {
+            if (typeof result !== ('boolean' || 'undefined')) {
+                res.status(201);
+                res.json(result);
+            } else {
+                res.status(409);
+                res.json();
+            }
         }
     }
 
-    findError(res) {
+    saveSuccess(res) {
+        return (result) => {
+            if (result.newItem) {
+                res.status(201);
+                res.json(result.body);
+            } else {
+                res.status(200);
+                res.json(result.body);
+            }
+        }
+    }
+
+    updateSuccess(res) {
+        return (result) => {
+            if (result) {
+                res.status(200);
+                res.json();
+            } else {
+                res.status(404);
+                res.json();
+            }
+        }
+    }
+
+    deleteSuccess(res) {
+        return (result) => {
+            if (result) {
+                res.status(204);
+                res.json();
+            } else {
+                res.status(404);
+                res.json();
+            }
+        }
+    }
+
+    noSuccess(res) {
         return (error) => {
-            res.status(404); // Not found
-            res.json(error);
+            res.status(500);
+            res.json({
+                error: 'Internal server error',
+                error_description: error
+            });
         }
     }
 };

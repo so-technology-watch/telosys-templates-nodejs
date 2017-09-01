@@ -12,5 +12,9 @@ const router = express.Router();
 #foreach ($entity in $selectedEntities)
 router.use('/api/${fn.uncapitalize($entity.name)}', require('./api/${fn.uncapitalize($entity.name)}Routes'));
 #end
+router.use('*', function(req, res) {
+        res.status(400);
+        res.json();
+});
 
 module.exports = router;

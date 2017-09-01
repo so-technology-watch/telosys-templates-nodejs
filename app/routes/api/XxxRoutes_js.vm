@@ -40,8 +40,12 @@ router.get('', function (req, res) {
     ${uncapitalizedEntityName}Controller.findAll(res);
 });
 
-router.put('', function (req, res) {
+router.put('/:$entityAttributes', function (req, res) {
     ${uncapitalizedEntityName}Controller.update(req, res);
+});
+
+router.put('', function (req, res) {
+    ${uncapitalizedEntityName}Controller.save(req, res);
 });
 
 router.post('/', function (req, res) {
